@@ -1,13 +1,20 @@
 import json
 import logging
+
 from fastapi import FastAPI, Request
 
-from app.sitrep import parse_sitrep_request, artifact_response
+from app.db import SessionLocal, bind_default_engine
+from app.pipeline import run_pipeline
+from app.sitrep import parse_sitrep_request
 
 logger = logging.getLogger("sitrep")
 logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(title="Interview Scorecard")
+
+@app.on_event("startup")
+def _startup():
+    bind_default_engine()
 
 @app.get("/healthz")
 def healthz():
@@ -28,7 +35,11 @@ async def _handle(request: Request, source: str) -> dict:
         payload = {}
 
     normalized = parse_sitrep_request(payload)
-    return artifact_response("Interview Scorecard", f"Received task: {normalized.title or '(untitled)'}")
+    session = SessionLocal()
+    try:
+        return run_pipeline(normalized, source, session)
+    finally:
+        session.close()
 
 @app.post("/run")
 async def run(request: Request):

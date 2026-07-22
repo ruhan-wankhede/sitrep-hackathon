@@ -1,9 +1,10 @@
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.db import init_db
+from app.db import SessionLocal, init_db
 
 @pytest.fixture()
 def session():
@@ -13,3 +14,10 @@ def session():
     s = Session()
     yield s
     s.close()
+
+@pytest.fixture()
+def client_with_db(session):
+    # bind the app's session factory to the test's in-memory engine
+    SessionLocal.configure(bind=session.get_bind())
+    from app.main import app
+    return TestClient(app)
