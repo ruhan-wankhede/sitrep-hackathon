@@ -7,7 +7,6 @@ A SitRep agent that turns an interview debrief meeting into a structured, eviden
 - Persists every interview to Postgres and builds a live comparison matrix and per-candidate dashboard, in addition to returning a markdown artifact on every call.
 
 ![Comparison matrix screenshot](docs/screenshot-matrix.png)
-<!-- TODO: replace with a real screenshot of the /d/{token}/role/{role_id} comparison matrix -->
 
 ## Architecture
 

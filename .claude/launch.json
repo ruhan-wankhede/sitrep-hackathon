@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "scorecard",
+      "runtimeExecutable": "C:\\Users\\ruhan\\PycharmProjects\\SitrepHackathon\\.venv\\Scripts\\uvicorn.exe",
+      "runtimeArgs": ["app.main:app", "--port", "8000"],
+      "cwd": "C:\\Users\\ruhan\\PycharmProjects\\SitrepHackathon",
+      "port": 8000
+    }
+  ]
+}

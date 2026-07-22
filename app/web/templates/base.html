@@ -4,15 +4,56 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Interview Scorecard{% endblock %}</title>
+  <meta name="description" content="Evidence-backed interview scorecards and panel intelligence for hiring teams.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%230b0d10' stroke='%2334d399' stroke-width='2'/%3E%3Crect x='10' y='10' width='12' height='12' rx='3' fill='%2334d399'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'system-ui', 'sans-serif'],
+            mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+          },
+          colors: {
+            ink: {
+              950: '#0b0d10', 900: '#111419', 850: '#161a20', 800: '#1d222a',
+              700: '#2a313b', 600: '#3d4650', 500: '#525b68', 400: '#7b8494', 300: '#a6adba',
+            },
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .tnum { font-variant-numeric: tabular-nums; }
+    ::selection { background: rgba(52, 211, 153, .25); }
+    html { scroll-behavior: smooth; }
+    a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
+      outline: 2px solid rgba(52, 211, 153, .55); outline-offset: 2px; border-radius: 6px;
+    }
+    .grain::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 5; opacity: .035;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+  </style>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
 </head>
-<body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased">
-  <header class="border-b border-zinc-800 px-6 py-4 flex items-center gap-3">
-    <span class="text-emerald-400 text-xl">▣</span>
-    <a href="/d/{{ token }}" class="font-semibold tracking-tight">Interview Scorecard</a>
-    <span class="text-zinc-500 text-sm">panel intelligence</span>
+<body class="grain bg-ink-950 text-zinc-100 min-h-screen font-sans antialiased">
+  <div class="pointer-events-none fixed inset-x-0 top-0 h-80 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(52,211,153,0.07),transparent)]"></div>
+  <header class="sticky top-0 z-40 border-b border-white/5 bg-ink-950/80 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto px-6 py-3.5 flex items-center gap-3">
+      <a href="/d/{{ token }}" class="group flex items-center gap-2.5">
+        <span class="grid h-7 w-7 place-items-center rounded-lg border border-emerald-400/25 bg-emerald-400/10 text-sm text-emerald-400 transition group-hover:bg-emerald-400/20">▣</span>
+        <span class="font-semibold tracking-tight">Interview Scorecard</span>
+      </a>
+      <span class="mt-0.5 font-mono text-xs lowercase tracking-wide text-ink-500">panel intelligence</span>
+    </div>
   </header>
-  <main class="max-w-6xl mx-auto px-6 py-8">{% block content %}{% endblock %}</main>
+  <main class="relative max-w-6xl mx-auto px-6 pt-10 pb-24">{% block content %}{% endblock %}</main>
 </body>
 </html>

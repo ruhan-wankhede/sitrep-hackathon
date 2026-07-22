@@ -1,13 +1,32 @@
 {% extends "base.html" %}
 {% block content %}
-<h1 class="text-2xl font-semibold mb-6">Hiring pipeline</h1>
-{% if not cards %}<p class="text-zinc-400">No interviews analyzed yet. Run the agent on an interview meeting in SitRep.</p>{% endif %}
-<div class="grid md:grid-cols-2 gap-4">
+<p class="mb-3 font-mono text-xs uppercase tracking-[0.25em] text-emerald-400/90">hiring pipeline</p>
+<h1 class="mb-12 max-w-2xl text-4xl font-bold tracking-tight" style="text-wrap: balance;">Every panel, one evidence trail.</h1>
+
+{% if not cards %}
+<div class="max-w-xl rounded-2xl border border-dashed border-ink-700 bg-ink-900/40 px-8 py-14">
+  <div class="mb-3 grid h-10 w-10 place-items-center rounded-xl border border-ink-700 bg-ink-850 text-emerald-400">▦</div>
+  <p class="mb-1 font-medium">No interviews analyzed yet</p>
+  <p class="text-sm leading-relaxed text-ink-400">Run the agent on an interview meeting in SitRep — the moment a scorecard lands, your pipeline appears here.</p>
+</div>
+{% endif %}
+
+<div class="grid gap-5 md:grid-cols-2">
   {% for c in cards %}
   <a href="/d/{{ token }}/role/{{ c.role.id }}"
-     class="block rounded-xl border border-zinc-800 bg-zinc-900/60 p-5 hover:border-emerald-500/50 transition">
-    <div class="text-lg font-medium capitalize">{{ c.role.title }}</div>
-    <div class="text-sm text-zinc-400 mt-1">{{ c.candidates }} candidate(s) · {{ c.interviews }} interview(s)</div>
+     class="group relative block rounded-2xl border border-white/5 bg-gradient-to-b from-ink-850 to-ink-900 p-6 transition duration-200 hover:-translate-y-0.5 hover:border-emerald-400/30 hover:shadow-[0_16px_48px_-16px_rgba(16,185,129,0.18)] active:translate-y-0">
+    <div class="text-lg font-semibold capitalize tracking-tight">{{ c.role.title }}</div>
+    <div class="mt-5 flex items-end gap-10">
+      <div>
+        <div class="tnum text-3xl font-bold leading-none">{{ c.candidates }}</div>
+        <div class="mt-1.5 font-mono text-[11px] uppercase tracking-widest text-ink-400">candidate{{ '' if c.candidates == 1 else 's' }}</div>
+      </div>
+      <div>
+        <div class="tnum text-3xl font-bold leading-none">{{ c.interviews }}</div>
+        <div class="mt-1.5 font-mono text-[11px] uppercase tracking-widest text-ink-400">interview{{ '' if c.interviews == 1 else 's' }}</div>
+      </div>
+      <span class="ml-auto mb-0.5 text-ink-500 transition duration-200 group-hover:translate-x-1 group-hover:text-emerald-400">→</span>
+    </div>
   </a>
   {% endfor %}
 </div>
