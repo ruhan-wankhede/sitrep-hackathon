@@ -10,13 +10,16 @@ SCORE_LABELS = {1: "Weak", 2: "Developing", 3: "Solid", 4: "Exceptional"}
 _FLAG_TITLES = {"leading_question": "Leading question", "non_job_related": "Non-job-related topic",
                 "vague_feedback": "Vague feedback"}
 
+def _md_cell(text: str) -> str:
+    return str(text).replace("|", "\\|").replace("\n", " ").strip()
+
 def panel_snapshot(session: Session, interview: Interview) -> dict:
     cand = session.get(Candidate, interview.candidate_id)
     ivs = session.query(Interview).filter(Interview.candidate_id == cand.id).all()
     iv_by_id = {iv.id: iv for iv in ivs}
     rows = [
         {"competency": r.competency, "score": r.score, "interviewer": iv_by_id[r.interview_id].interviewer}
-        for r in session.query(ScorecardRow).filter(ScorecardRow.interview_id.in_(iv_by_id)).all()
+        for r in session.query(ScorecardRow).filter(ScorecardRow.interview_id.in_(list(iv_by_id))).all()
     ]
     claims = [
         {"category": c.category, "statement": c.statement, "value": c.value, "interview_id": c.interview_id}
@@ -35,7 +38,7 @@ def compose_markdown(interview: Interview, scoreset: ScoreSet, flagset: FlagSet,
     for s in scoreset.scores:
         label = f"{s.score} — {SCORE_LABELS[s.score]}" if s.score else "Not assessed"
         ev = "; ".join(s.evidence) if s.evidence else s.rationale or "—"
-        lines.append(f"| {s.competency} | {label} | {ev} |")
+        lines.append(f"| {_md_cell(s.competency)} | {_md_cell(label)} | {_md_cell(ev)} |")
     if flagset.flags:
         lines += ["", "### ⚠ Interview quality flags"]
         for f in flagset.flags:

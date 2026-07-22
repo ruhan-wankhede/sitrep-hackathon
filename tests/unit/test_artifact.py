@@ -33,3 +33,11 @@ def test_compose_markdown_contains_key_sections(session):
     assert "System design" in md            # gap listed
     assert "non_job_related" in md or "Non-job-related" in md
     assert "/d/" in md                       # dashboard link
+
+def test_compose_markdown_escapes_pipes_and_newlines(session):
+    iv = _seed(session, "Aisha", "Priya", "s-esc", [],
+               [CompetencyScore(competency="Technical depth", score=3, evidence=["a | b\nc"], rationale="r")])
+    ss = ScoreSet(scores=[CompetencyScore(competency="Technical depth", score=3, evidence=["a | b\nc"], rationale="r")])
+    md = compose_markdown(iv, ss, FlagSet(), {"coverage": {"assessed": [], "unassessed": []}, "disagreements": [], "contradictions": []})
+    row = [line for line in md.splitlines() if line.startswith("| Technical depth")][0]
+    assert "a \\| b c" in row and "\n" not in row
