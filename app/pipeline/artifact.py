@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 from app.analytics import confirm_contradiction, contradiction_candidates, coverage, disagreements
 from app.config import settings
+from app.llm import LLMUnavailable
 from app.models import Candidate, ClaimRow, Interview, ScorecardRow
 from app.pipeline.passes import FlagSet, ScoreSet
 
@@ -25,11 +26,14 @@ def panel_snapshot(session: Session, interview: Interview) -> dict:
         {"category": c.category, "statement": c.statement, "value": c.value, "interview_id": c.interview_id}
         for c in session.query(ClaimRow).filter(ClaimRow.candidate_id == cand.id).all()
     ]
-    contradictions = [
-        {"a": a["statement"], "b": b["statement"], "categories": a["category"]}
-        for a, b in contradiction_candidates(claims)
-        if confirm_contradiction(a, b)
-    ]
+    contradictions = []
+    for a, b in contradiction_candidates(claims):
+        try:
+            confirmed = confirm_contradiction(a, b)
+        except LLMUnavailable:
+            continue
+        if confirmed:
+            contradictions.append({"a": a["statement"], "b": b["statement"], "categories": a["category"]})
     return {"coverage": coverage(rows), "disagreements": disagreements(rows), "contradictions": contradictions}
 
 def compose_markdown(interview: Interview, scoreset: ScoreSet, flagset: FlagSet, snapshot: dict) -> str:

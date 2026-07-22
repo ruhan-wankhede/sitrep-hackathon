@@ -1,3 +1,4 @@
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -22,12 +23,15 @@ def _get_or_create_candidate(session: Session, name: str, role_id: int) -> Candi
         session.flush()
     return cand
 
-def save_interview(session: Session, extraction: Extraction, scoreset: ScoreSet, flagset: FlagSet,
-                   summary: str, raw_payload: dict, source: str, rubric: list[str]) -> Interview:
+def _find_by_hash(session: Session, h: str) -> Interview | None:
+    return session.query(Interview).filter(Interview.dedup_hash == h).one_or_none()
+
+def _attempt(session: Session, extraction: Extraction, scoreset: ScoreSet, flagset: FlagSet,
+            summary: str, raw_payload: dict, source: str, rubric: list[str]) -> Interview:
     role = _get_or_create_role(session, extraction.role_title, rubric)
     cand = _get_or_create_candidate(session, extraction.candidate_name, role.id)
     h = dedup_hash(extraction.candidate_name, extraction.interviewer, summary)
-    iv = session.query(Interview).filter(Interview.dedup_hash == h).one_or_none()
+    iv = _find_by_hash(session, h)
     if iv is None:
         iv = Interview(candidate_id=cand.id, interviewer=extraction.interviewer, summary=summary,
                        raw_payload=raw_payload, source=source, dedup_hash=h)
@@ -51,3 +55,11 @@ def save_interview(session: Session, extraction: Extraction, scoreset: ScoreSet,
         session.add(FlagRow(interview_id=iv.id, type=f.type, excerpt=f.excerpt, note=f.note))
     session.commit()
     return iv
+
+def save_interview(session: Session, extraction: Extraction, scoreset: ScoreSet, flagset: FlagSet,
+                   summary: str, raw_payload: dict, source: str, rubric: list[str]) -> Interview:
+    try:
+        return _attempt(session, extraction, scoreset, flagset, summary, raw_payload, source, rubric)
+    except IntegrityError:
+        session.rollback()
+        return _attempt(session, extraction, scoreset, flagset, summary, raw_payload, source, rubric)
