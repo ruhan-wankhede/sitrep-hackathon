@@ -1,0 +1,5 @@
+{
+  "task": {"title": "Interview debrief: Aisha Verma", "description": "System design interview for Backend Engineer"},
+  "attendees": ["Marco Ruiz", "Aisha Verma"],
+  "summary": "Marco Ruiz ran a system design interview with Aisha Verma for the Backend Engineer position. Marco asked Aisha to design a rate limiter for a multi-tenant API. Aisha proposed a sliding-window counter in Redis with per-tenant quotas, discussed hot-key mitigation, and compared consistency trade-offs between local token buckets and centralized counters. When Marco pushed on failure modes, Aisha explained graceful degradation to a fail-open mode with alerting. She asked clarifying questions about tenant count and traffic shape before committing to a design. Marco noted she structured the whiteboard clearly and adjusted quickly when constraints changed."
+}

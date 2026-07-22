@@ -1,0 +1,5 @@
+{
+  "task": {"title": "Interview debrief: Daniel Okafor", "description": "Behavioral interview for Backend Engineer"},
+  "attendees": ["Sam Kowalski", "Daniel Okafor"],
+  "summary": "Sam Kowalski ran a behavioral interview with Daniel Okafor for Backend Engineer. Daniel described taking ownership of a failing release: he coordinated a rollback, wrote the postmortem, and set up a release checklist that cut failed deploys by half over the next quarter. Asked about mentoring, he described onboarding two junior engineers with pairing sessions and written guides. Daniel communicated in an organized, reflective way and gave concrete examples with measurable outcomes."
+}

@@ -1,0 +1,5 @@
+{
+  "task": {"title": "Interview debrief: Aisha Verma", "description": "Behavioral interview for Backend Engineer"},
+  "attendees": ["Sam Kowalski", "Aisha Verma"],
+  "summary": "Sam Kowalski held a behavioral interview with Aisha Verma for Backend Engineer. Sam asked about a conflict with a colleague; Aisha described disagreeing with a staff engineer about migration sequencing at Finlo, where she said the team was just 3 people including herself and she was the senior-most, so she owned the final call after presenting benchmarks. Sam asked whether she plans to start a family soon, saying the team has a heavy on-call load. Sam wrapped up saying Aisha seems like a great culture fit and he had good vibes overall, and asked wouldn't she agree the team's approach to on-call is best-in-class."
+}

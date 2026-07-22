@@ -1,0 +1,5 @@
+{
+  "task": {"title": "Interview debrief: Aisha Verma", "description": "Technical interview for Backend Engineer"},
+  "attendees": ["Priya Nair", "Aisha Verma"],
+  "summary": "Priya Nair conducted a technical interview with Aisha Verma for the Backend Engineer role. Priya asked Aisha to walk through the hardest scaling problem she has solved. Aisha described leading a team of 8 engineers through a Postgres sharding migration at Finlo, explaining shard-key selection, dual-write cutover, and how they kept p99 latency under 40ms during the transition. Priya then asked how she debugs production incidents; Aisha described a structured approach using distributed tracing and error budgets, citing a specific incident where she isolated a connection-pool leak within an hour. Aisha communicated clearly, used precise terminology, and checked whether her answers matched the question's intent."
+}
