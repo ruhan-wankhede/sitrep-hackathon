@@ -41,12 +41,16 @@ def _attempt(session: Session, extraction: Extraction, scoreset: ScoreSet, flags
         for model in (ScorecardRow, ClaimRow, FlagRow):
             session.query(model).filter(model.interview_id == iv.id).delete()
         iv.summary, iv.raw_payload, iv.source = summary, raw_payload, source
-    scored_competencies = {s.competency for s in scoreset.scores}
+    rubric_by_norm = {r.casefold().strip(): r for r in rubric}
+    scored_norms = set()
     for s in scoreset.scores:
-        session.add(ScorecardRow(interview_id=iv.id, competency=s.competency, score=s.score,
+        norm = s.competency.casefold().strip()
+        scored_norms.add(norm)
+        canonical = rubric_by_norm.get(norm, s.competency)
+        session.add(ScorecardRow(interview_id=iv.id, competency=canonical, score=s.score,
                                  evidence=s.evidence, rationale=s.rationale))
     for competency in rubric:
-        if competency not in scored_competencies:
+        if competency.casefold().strip() not in scored_norms:
             session.add(ScorecardRow(interview_id=iv.id, competency=competency, score=None))
     for c in extraction.claims:
         session.add(ClaimRow(candidate_id=cand.id, interview_id=iv.id, category=c.category,

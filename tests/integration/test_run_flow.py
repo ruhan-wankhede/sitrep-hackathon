@@ -1,7 +1,6 @@
 from fastapi.testclient import TestClient
 
 import app.llm as llm
-import app.main as main_mod
 from app.main import app
 from app.pipeline.passes import Extraction
 
@@ -49,3 +48,24 @@ def test_llm_down_returns_graceful_artifact_not_500(client_with_db, monkeypatch)
     resp = client_with_db.post("/run", json=PAYLOAD)
     assert resp.status_code == 200
     assert "couldn't analyze" in resp.json()["artifacts"][0]["content"]
+
+def fake_llm_out_of_range_score(**kw):
+    if kw["schema"] is Extraction:
+        return {"is_interview": True, "candidate_name": "Aisha Verma", "role_title": "Backend Engineer",
+                "interviewer": "Priya",
+                "exchanges": [{"question": "sharding?", "answer_summary": "explained migration in depth"}],
+                "claims": [{"category": "team_size", "statement": "led a team of 8", "value": "8"}]}
+    name = kw["schema"].__name__
+    if name == "ScoreSet":
+        return {"scores": [{"competency": "Technical depth", "score": 5,
+                            "evidence": ["explained a sharding migration in depth"], "rationale": "strong"}]}
+    if name == "FlagSet":
+        return {"flags": []}
+    return {"contradictory": False}
+
+def test_out_of_range_score_returns_200_with_artifacts(client_with_db, monkeypatch):
+    monkeypatch.setattr(llm, "PROVIDERS", [fake_llm_out_of_range_score])
+    monkeypatch.setattr(llm, "RETRY_SLEEP", 0)
+    resp = client_with_db.post("/run", json=PAYLOAD)
+    assert resp.status_code == 200
+    assert "artifacts" in resp.json()

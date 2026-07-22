@@ -1,5 +1,5 @@
 from typing import Literal
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.llm import complete_json
 
@@ -22,7 +22,7 @@ class Extraction(BaseModel):
 
 class CompetencyScore(BaseModel):
     competency: str
-    score: int | None = None
+    score: int | None = Field(None, ge=1, le=4)
     evidence: list[str] = []
     rationale: str = ""
 
@@ -75,7 +75,7 @@ def score(extraction: Extraction, rubric: list[str]) -> ScoreSet:
 
 def apply_evidence_gate(scoreset: ScoreSet) -> ScoreSet:
     for s in scoreset.scores:
-        if s.score is not None and not s.evidence:
+        if s.score is not None and not any(e.strip() for e in s.evidence):
             s.score = None
             s.rationale = (s.rationale + " (demoted: no supporting evidence)").strip()
     return scoreset

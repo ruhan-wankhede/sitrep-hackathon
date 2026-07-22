@@ -34,3 +34,9 @@ def run_pipeline(normalized: NormalizedTask, source: str, session: Session) -> d
             "Interview Scorecard",
             "We couldn't analyze this meeting right now (AI providers unavailable). "
             "Your meeting data is safe — re-run this task in a few minutes.")
+    except Exception:
+        logger.exception("unexpected error in run_pipeline")
+        return artifact_response(
+            "Interview Scorecard",
+            "Something went wrong while analyzing this meeting. Your meeting data in SitRep "
+            "is unaffected — re-run this task in a few minutes.")

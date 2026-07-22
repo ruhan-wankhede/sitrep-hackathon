@@ -1,5 +1,8 @@
+import logging
 import time
 from pydantic import BaseModel, ValidationError
+
+logger = logging.getLogger("llm")
 
 class LLMUnavailable(Exception):
     pass
@@ -23,5 +26,8 @@ def complete_json(prompt: str, schema: type[BaseModel], system: str = "") -> Bas
                 return schema.model_validate(raw)
             except (Exception, ValidationError) as e:
                 last_err = e
-                time.sleep(RETRY_SLEEP * (attempt + 1))
+                logger.warning("provider %s attempt %d failed: %s",
+                               getattr(provider, "__module__", provider), attempt + 1, e)
+                if attempt + 1 < ATTEMPTS_PER_PROVIDER:
+                    time.sleep(RETRY_SLEEP * (attempt + 1))
     raise LLMUnavailable(f"all providers failed: {last_err}")

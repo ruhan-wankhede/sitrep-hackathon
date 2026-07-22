@@ -27,6 +27,7 @@ def test_snapshot_skips_pair_when_llm_unavailable(session, monkeypatch):
         raise llm.LLMUnavailable("provider down")
 
     monkeypatch.setattr(llm, "PROVIDERS", [always_raises])
+    monkeypatch.setattr(llm, "RETRY_SLEEP", 0)
     _seed(session, "Aisha", "Priya", "s1",
           [Claim(category="team_size", statement="led a team of 8", value="8")],
           [CompetencyScore(competency="Technical depth", score=4, evidence=["e"], rationale="")])

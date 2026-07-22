@@ -22,6 +22,14 @@ def test_save_is_idempotent_on_same_summary(session):
     assert session.query(Interview).count() == 1
     assert session.query(ScorecardRow).count() == 1
 
+def test_save_normalizes_competency_case_and_whitespace_against_rubric(session):
+    ss = ScoreSet(scores=[CompetencyScore(competency="technical depth  ", score=3, evidence=["q"], rationale="r")])
+    iv = save_interview(session, EXT, ss, FS, "summary", {}, "test", ["Technical depth"])
+    rows = session.query(ScorecardRow).filter(ScorecardRow.interview_id == iv.id).all()
+    assert len(rows) == 1
+    assert rows[0].competency == "Technical depth"
+    assert rows[0].score == 3
+
 def test_save_recovers_from_concurrent_duplicate_insert(session, monkeypatch):
     first = save_interview(session, EXT, SS, FS, "summary", {}, "test", ["Technical depth"])
 
