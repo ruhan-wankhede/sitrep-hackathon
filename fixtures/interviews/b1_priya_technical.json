@@ -1,0 +1,5 @@
+{
+  "task": {"title": "Interview debrief: Daniel Okafor", "description": "Technical interview for Backend Engineer"},
+  "attendees": ["Priya Nair", "Daniel Okafor"],
+  "summary": "Priya Nair interviewed Daniel Okafor for the Backend Engineer role. Priya asked about his most complex backend work. Daniel described maintaining a Django monolith and adding a Celery-based export pipeline; he explained the queue topology but was vague on how he measured throughput, saying it 'felt fast enough'. Asked to debug a hypothetical N+1 query, Daniel identified the problem but needed prompting to reach select_related. He mentioned four years of backend experience at two startups. He answered politely and asked thoughtful questions about the team's code review culture."
+}

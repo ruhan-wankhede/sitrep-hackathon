@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ cand.name|title }}{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold capitalize">{{ cand.name }}</h1>
+<p class="text-zinc-400 text-sm mt-1 mb-6">{{ interviews|length }} interview(s)</p>
+
+{% if coverage.unassessed %}
+<div class="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/5 px-4 py-3 text-sm">
+  ◐ Still unprobed: <span class="text-amber-300">{{ coverage.unassessed|join(", ") }}</span>
+  — brief the next interviewer to cover these.
+</div>
+{% endif %}
+{% for d in disagreements %}
+<div class="mb-4 rounded-lg border border-red-500/40 bg-red-500/5 px-4 py-3 text-sm">
+  ⚡ Panel disagrees on <b>{{ d.competency }}</b> (spread {{ d.spread }}):
+  {% for k, v in d.scores.items() %}{{ k }}: {{ v }}{{ ", " if not loop.last }}{% endfor %}
+</div>
+{% endfor %}
+{% if claims %}
+<h2 class="text-lg font-medium mt-8 mb-3">Claim ledger</h2>
+<div class="rounded-xl border border-zinc-800 divide-y divide-zinc-800/70 text-sm">
+  {% for c in claims %}
+  <div class="px-4 py-3 flex gap-3">
+    <span class="text-zinc-500 w-36 shrink-0">{{ c.category|replace("_", " ") }}</span>
+    <span>“{{ c.statement }}”</span>
+    <span class="ml-auto text-zinc-400">{{ c.value }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<h2 class="text-lg font-medium mt-8 mb-3">Interviews</h2>
+{% for iv in interviews %}
+<div class="mb-4 rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
+  <div class="flex justify-between text-sm mb-3">
+    <span class="font-medium">{{ iv.interviewer or "Interview" }}</span>
+    <span class="text-zinc-500">{{ iv.meeting_date.strftime("%b %d, %Y") }}</span>
+  </div>
+  <table class="w-full text-sm">
+    {% for r in by_iv[iv.id] %}
+    <tr class="border-t border-zinc-800/60">
+      <td class="py-2 text-zinc-300">{{ r.competency }}</td>
+      <td class="py-2 w-28">{% if r.score %}<span class="text-emerald-400">{{ r.score }} / 4</span>
+          {% else %}<span class="text-zinc-600 italic">Not assessed</span>{% endif %}</td>
+      <td class="py-2 text-zinc-400">{{ r.evidence|join("; ") if r.evidence else r.rationale }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endfor %}
+{% for f in flags %}
+<div class="mb-2 rounded-lg border border-red-500/30 bg-red-500/5 px-4 py-2 text-sm">
+  ⚠ <b>{{ f.type|replace("_", " ") }}</b>: “{{ f.excerpt }}” — {{ f.note }}
+</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-6">Hiring pipeline</h1>
+{% if not cards %}<p class="text-zinc-400">No interviews analyzed yet. Run the agent on an interview meeting in SitRep.</p>{% endif %}
+<div class="grid md:grid-cols-2 gap-4">
+  {% for c in cards %}
+  <a href="/d/{{ token }}/role/{{ c.role.id }}"
+     class="block rounded-xl border border-zinc-800 bg-zinc-900/60 p-5 hover:border-emerald-500/50 transition">
+    <div class="text-lg font-medium capitalize">{{ c.role.title }}</div>
+    <div class="text-sm text-zinc-400 mt-1">{{ c.candidates }} candidate(s) · {{ c.interviews }} interview(s)</div>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}
