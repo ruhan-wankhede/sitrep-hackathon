@@ -12,6 +12,9 @@ logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(title="Interview Scorecard")
 
+from app.web.routes import router as dashboard_router
+app.include_router(dashboard_router)
+
 @app.on_event("startup")
 def _startup():
     bind_default_engine()

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ role.title|title }} — matrix{% endblock %}
+{% block content %}
+<div x-data="{open:null}">
+<h1 class="text-2xl font-semibold capitalize">{{ role.title }} — comparison matrix</h1>
+<p class="text-zinc-400 text-sm mt-1 mb-6">Click any cell for per-interviewer evidence.</p>
+<div class="overflow-x-auto rounded-xl border border-zinc-800">
+<table class="w-full text-sm">
+  <thead class="bg-zinc-900">
+    <tr>
+      <th class="text-left px-4 py-3 text-zinc-400 font-medium">Competency</th>
+      {% for col in columns %}
+      <th class="px-4 py-3 text-left">
+        <a href="/d/{{ token }}/candidate/{{ col.candidate.id }}" class="capitalize font-medium hover:text-emerald-400">{{ col.candidate.name }}</a>
+        <span class="ml-1">
+          {% if col.conflict %}<span title="claim inconsistency" class="text-red-400">⚠</span>{% endif %}
+          {% if col.gap %}<span title="coverage incomplete" class="text-amber-400">◐</span>{% endif %}
+        </span>
+        <div class="text-xs text-zinc-500 font-normal">{{ col.n_interviews }} interview(s)</div>
+      </th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for comp in rubric %}
+    <tr class="border-t border-zinc-800/70">
+      <td class="px-4 py-3 text-zinc-300">{{ comp }}</td>
+      {% for col in columns %}
+      {% for cell in col.cells %}{% if cell.competency == comp %}
+      <td class="px-4 py-3 cursor-pointer hover:bg-zinc-900/80"
+          data-cand="{{ col.candidate.name }}" data-comp="{{ comp }}" data-detail='{{ cell.detail|tojson }}'
+          @click="open = {cand: $el.dataset.cand, comp: $el.dataset.comp, detail: JSON.parse($el.dataset.detail)}">
+        {% if cell.avg %}
+          {% set full = cell.avg|round(0, 'floor')|int %}
+          <span class="{% if cell.avg >= 3.5 %}text-emerald-400{% elif cell.avg >= 2.5 %}text-emerald-300{% elif cell.avg >= 1.5 %}text-amber-400{% else %}text-red-400{% endif %} tracking-widest">
+            {%- for i in range(4) %}{{ '●' if i < full else '○' }}{% endfor -%}
+          </span>
+          <span class="ml-2 text-zinc-400">{{ cell.avg }}</span>
+        {% else %}
+          <span class="text-zinc-600 italic">Not assessed</span>
+        {% endif %}
+      </td>
+      {% endif %}{% endfor %}
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<!-- slide-over -->
+<div x-cloak x-show="open" @click.self="open=null"
+     class="fixed inset-0 bg-black/60 flex justify-end z-50">
+  <div class="w-full max-w-md bg-zinc-900 border-l border-zinc-700 p-6 overflow-y-auto">
+    <button @click="open=null" class="text-zinc-500 hover:text-zinc-200 float-right">✕</button>
+    <h2 class="text-lg font-semibold capitalize" x-text="open?.cand"></h2>
+    <p class="text-sm text-emerald-400 mb-4" x-text="open?.comp"></p>
+    <template x-for="d in (open?.detail || [])">
+      <div class="mb-4 rounded-lg border border-zinc-800 p-4">
+        <div class="flex justify-between text-sm">
+          <span class="font-medium" x-text="d.interviewer || 'interviewer'"></span>
+          <span x-text="d.score ? d.score + ' / 4' : 'Not assessed'"
+                :class="d.score ? 'text-emerald-400' : 'text-zinc-500'"></span>
+        </div>
+        <template x-for="e in (d.evidence || [])">
+          <blockquote class="mt-2 text-sm text-zinc-300 border-l-2 border-emerald-500/50 pl-3" x-text="e"></blockquote>
+        </template>
+        <p class="mt-2 text-xs text-zinc-500" x-text="d.rationale"></p>
+      </div>
+    </template>
+  </div>
+</div>
+</div>
+{% endblock %}
