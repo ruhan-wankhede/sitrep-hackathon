@@ -37,9 +37,13 @@ def save_interview(session: Session, extraction: Extraction, scoreset: ScoreSet,
         for model in (ScorecardRow, ClaimRow, FlagRow):
             session.query(model).filter(model.interview_id == iv.id).delete()
         iv.summary, iv.raw_payload, iv.source = summary, raw_payload, source
+    scored_competencies = {s.competency for s in scoreset.scores}
     for s in scoreset.scores:
         session.add(ScorecardRow(interview_id=iv.id, competency=s.competency, score=s.score,
                                  evidence=s.evidence, rationale=s.rationale))
+    for competency in rubric:
+        if competency not in scored_competencies:
+            session.add(ScorecardRow(interview_id=iv.id, competency=competency, score=None))
     for c in extraction.claims:
         session.add(ClaimRow(candidate_id=cand.id, interview_id=iv.id, category=c.category,
                              statement=c.statement, value=c.value))
