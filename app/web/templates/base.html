@@ -1,11 +1,24 @@
 <!doctype html>
-<html>
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Interview Scorecard{% endblock %}</title>
   <meta name="description" content="Evidence-backed interview scorecards and panel intelligence for hiring teams.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='8' fill='%23ADAE52'/%3E%3Crect x='10' y='10' width='12' height='12' rx='3' fill='%23211D18'/%3E%3C/svg%3E">
+  <script>
+    // Set theme before first paint to avoid a flash of the wrong mode.
+    (function () {
+      try {
+        var k = 'scorecard-theme';
+        var s = localStorage.getItem(k);
+        if (s !== 'light' && s !== 'dark') {
+          s = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', s);
+      } catch (e) {}
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -20,44 +33,92 @@
             mono: ['ui-monospace', '"SFMono-Regular"', 'Menlo', 'monospace'],
           },
           colors: {
-            paper: '#FBF9F6', cream: '#FCFBF9',
-            surface: { DEFAULT: '#F5F1EA', 2: '#EFE9E0' },
-            line: { DEFAULT: '#E7E1D8', 2: '#D8D0C4' },
-            ink: { DEFAULT: '#211D18', dark: '#3B362E', muted: '#6E6659', faint: '#A39A8C' },
-            olive: { DEFAULT: '#ADAE52', deep: '#6F7020', hover: '#9C9D45', wash: '#EDEDD6', deeper: '#565717' },
-            ember: { DEFAULT: '#E8912A', deep: '#8A5A12', wash: '#FBEBD3' },
-            clay: { DEFAULT: '#C67E64', deep: '#7C4230', wash: '#F5E4DC' },
+            paper: 'var(--paper)',
+            surface: { DEFAULT: 'var(--surface)', 2: 'var(--surface-2)' },
+            panel: 'var(--panel)',
+            track: 'var(--track)',
+            onaccent: '#211D18',
+            line: { DEFAULT: 'var(--line)', 2: 'var(--line-2)', soft: 'var(--line-soft)' },
+            fg: { DEFAULT: 'var(--fg)', 2: 'var(--fg2)', soft: 'var(--fg-soft)', mute: 'var(--fg-mute)', faint: 'var(--fg-faint)' },
+            accent: { DEFAULT: 'var(--accent)', text: 'var(--accent-text)', hover: 'var(--accent-hover)', wash: 'var(--accent-wash)', deep: 'var(--accent-deep)' },
+            warn: { DEFAULT: 'var(--warn)', text: 'var(--warn-text)', wash: 'var(--warn-wash)' },
+            danger: { DEFAULT: 'var(--danger)', text: 'var(--danger-text)', wash: 'var(--danger-wash)' },
           },
           boxShadow: {
-            card: '0 8px 24px rgba(33,29,24,.05)',
-            lift: '0 10px 30px rgba(33,29,24,.1)',
-            panel: '0 6px 18px rgba(33,29,24,.18)',
+            card: 'var(--shadow-card)',
+            lift: 'var(--shadow-lift)',
+            panel: 'var(--shadow-panel)',
           },
         },
       },
     }
   </script>
   <style>
+    :root, [data-theme="light"] {
+      --paper:#FBF9F6; --surface:#FFFFFF; --surface-2:#FCFBF9; --panel:#F5F1EA; --track:#EFE9E0;
+      --line:#E7E1D8; --line-2:#D8D0C4; --line-soft:#EEE8DE;
+      --fg:#211D18; --fg2:#3B362E; --fg-soft:#6E6659; --fg-mute:#8A8175; --fg-faint:#A39A8C;
+      --accent:#ADAE52; --accent-text:#6F7020; --accent-hover:#9C9D45; --accent-wash:#EDEDD6; --accent-deep:#565717;
+      --warn:#E8912A; --warn-text:#8A5A12; --warn-wash:#FBEBD3;
+      --danger:#C67E64; --danger-text:#7C4230; --danger-wash:#F5E4DC;
+      --shadow-card:0 8px 24px rgba(33,29,24,.05);
+      --shadow-lift:0 10px 30px rgba(33,29,24,.1);
+      --shadow-panel:0 6px 18px rgba(33,29,24,.18);
+    }
+    [data-theme="dark"] {
+      --paper:#16130D; --surface:#211E17; --surface-2:#2A251B; --panel:#2F291D; --track:#332E22;
+      --line:#3A3427; --line-2:#494232; --line-soft:#332E22;
+      --fg:#F3EFE8; --fg2:#D9D3C8; --fg-soft:#B0A899; --fg-mute:#948B7C; --fg-faint:#7E7669;
+      --accent:#ADAE52; --accent-text:#C6C86E; --accent-hover:#BFC066; --accent-wash:#2C2B16; --accent-deep:#C6C86E;
+      --warn:#E8912A; --warn-text:#E8A94E; --warn-wash:#33280F;
+      --danger:#C67E64; --danger-text:#DBA089; --danger-wash:#3A251C;
+      --shadow-card:0 8px 24px rgba(0,0,0,.4);
+      --shadow-lift:0 12px 34px rgba(0,0,0,.5);
+      --shadow-panel:0 6px 22px rgba(0,0,0,.55);
+    }
     [x-cloak] { display: none !important; }
     .tnum { font-variant-numeric: tabular-nums; }
-    ::selection { background: #EDEDD6; }
+    ::selection { background: var(--accent-wash); }
     html { scroll-behavior: smooth; }
+    body { transition: background-color .2s ease, color .2s ease; }
     a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
-      outline: none; box-shadow: 0 0 0 3px #EDEDD6, 0 0 0 4px #6F7020; border-radius: 6px;
+      outline: none; box-shadow: 0 0 0 3px var(--accent-wash), 0 0 0 4px var(--accent-text); border-radius: 6px;
     }
   </style>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
 </head>
-<body class="bg-paper text-ink min-h-screen font-sans antialiased">
-  <header class="sticky top-0 z-40 border-b border-line bg-paper/90 backdrop-blur-md">
+<body class="bg-paper text-fg min-h-screen font-sans antialiased">
+  <header class="sticky top-0 z-40 border-b border-line bg-paper">
     <div class="max-w-6xl mx-auto px-6 py-3.5 flex items-center gap-3">
       <a href="/d/{{ token }}" class="group flex items-center gap-2.5">
-        <span class="grid h-8 w-8 place-items-center rounded-[11px] bg-olive text-ink text-sm transition group-hover:bg-olive-hover">▣</span>
+        <span class="grid h-8 w-8 place-items-center rounded-[11px] bg-accent text-onaccent text-sm transition group-hover:bg-accent-hover">▣</span>
         <span class="font-bold tracking-[-0.01em] text-[17px]">Interview Scorecard</span>
       </a>
-      <span class="mt-0.5 font-mono text-[11px] uppercase tracking-[0.16em] text-olive-deep">panel intelligence</span>
+      <span class="mt-0.5 font-mono text-[11px] uppercase tracking-[0.16em] text-accent-text">panel intelligence</span>
+      <button id="theme-toggle" type="button" aria-label="Toggle light and dark theme"
+              class="ml-auto grid h-9 w-9 place-items-center rounded-[11px] border border-line text-fg-soft transition hover:bg-panel hover:text-fg">
+        <span id="theme-icon" class="text-base leading-none" aria-hidden="true">☾</span>
+      </button>
     </div>
   </header>
   <main class="relative max-w-6xl mx-auto px-6 pt-12 pb-24">{% block content %}{% endblock %}</main>
+  <script>
+    (function () {
+      var k = 'scorecard-theme', root = document.documentElement;
+      var btn = document.getElementById('theme-toggle'), icon = document.getElementById('theme-icon');
+      function paint() {
+        var dark = root.getAttribute('data-theme') === 'dark';
+        if (icon) icon.textContent = dark ? '☀' : '☾';
+        if (btn) btn.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+      }
+      paint();
+      if (btn) btn.addEventListener('click', function () {
+        var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem(k, next); } catch (e) {}
+        paint();
+      });
+    })();
+  </script>
 </body>
 </html>

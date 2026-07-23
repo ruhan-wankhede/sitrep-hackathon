@@ -1,71 +1,71 @@
 {% extends "base.html" %}
 {% block title %}{{ cand.name|title }}{% endblock %}
 {% block content %}
-<nav class="mb-10 font-mono text-xs text-ink-faint">
-  <a href="/d/{{ token }}/role/{{ cand.role_id }}" class="transition hover:text-olive-deep">← comparison matrix</a>
+<nav class="mb-10 font-mono text-xs text-fg-faint">
+  <a href="/d/{{ token }}/role/{{ cand.role_id }}" class="transition hover:text-accent-text">← comparison matrix</a>
 </nav>
 
 <div class="mb-12 flex items-center gap-5">
   {% set parts = cand.name.split() %}
-  <span class="grid h-16 w-16 shrink-0 place-items-center rounded-[14px] bg-olive text-xl font-bold uppercase text-ink">
+  <span class="grid h-16 w-16 shrink-0 place-items-center rounded-[14px] bg-accent text-xl font-bold uppercase text-onaccent">
     {{- parts[:2] | map('first') | join('') if parts else '?' -}}
   </span>
   <div>
     <h1 class="font-display text-6xl uppercase leading-[0.9] tracking-[0.005em]">{{ cand.name }}</h1>
-    <p class="tnum mt-2 font-mono text-sm text-ink-muted">{{ interviews|length }} interview{{ '' if interviews|length == 1 else 's' }} on record</p>
+    <p class="tnum mt-2 font-mono text-sm text-fg-soft">{{ interviews|length }} interview{{ '' if interviews|length == 1 else 's' }} on record</p>
   </div>
 </div>
 
 {% if coverage.unassessed %}
-<div class="mb-4 flex items-start gap-3 rounded-[12px] bg-ember-wash px-5 py-4 text-sm leading-relaxed">
-  <span class="mt-0.5 text-ember-deep">◐</span>
+<div class="mb-4 flex items-start gap-3 rounded-[12px] bg-warn-wash px-5 py-4 text-sm leading-relaxed">
+  <span class="mt-0.5 text-warn-text">◐</span>
   <div>
-    <span class="font-bold text-ember-deep">Still unprobed:</span>
-    <span class="text-ink-dark">{{ coverage.unassessed|join(", ") }}</span>
-    <span class="text-ink-muted"> — brief the next interviewer to cover these.</span>
+    <span class="font-bold text-warn-text">Still unprobed:</span>
+    <span class="text-fg-2">{{ coverage.unassessed|join(", ") }}</span>
+    <span class="text-fg-soft"> — brief the next interviewer to cover these.</span>
   </div>
 </div>
 {% endif %}
 {% for d in disagreements %}
-<div class="mb-4 flex items-start gap-3 rounded-[12px] bg-clay-wash px-5 py-4 text-sm leading-relaxed">
-  <span class="mt-0.5 text-clay-deep">⚡</span>
+<div class="mb-4 flex items-start gap-3 rounded-[12px] bg-danger-wash px-5 py-4 text-sm leading-relaxed">
+  <span class="mt-0.5 text-danger-text">⚡</span>
   <div>
-    <span class="font-bold text-clay-deep">Panel disagrees on {{ d.competency }}</span>
-    <span class="tnum text-ink-muted">(spread {{ d.spread }}) — </span>
-    <span class="tnum text-ink-dark">{% for k, v in d.scores.items() %}{{ k }}: {{ v }}{{ ", " if not loop.last }}{% endfor %}</span>
+    <span class="font-bold text-danger-text">Panel disagrees on {{ d.competency }}</span>
+    <span class="tnum text-fg-soft">(spread {{ d.spread }}) — </span>
+    <span class="tnum text-fg-2">{% for k, v in d.scores.items() %}{{ k }}: {{ v }}{{ ", " if not loop.last }}{% endfor %}</span>
   </div>
 </div>
 {% endfor %}
 
 {% if claims %}
-<h2 class="mb-4 mt-14 font-mono text-xs uppercase tracking-[0.16em] text-olive-deep">claim ledger</h2>
-<div class="divide-y divide-line rounded-[14px] border border-line bg-cream text-sm shadow-card">
+<h2 class="mb-4 mt-14 font-mono text-xs uppercase tracking-[0.16em] text-accent-text">claim ledger</h2>
+<div class="divide-y divide-line rounded-[14px] border border-line bg-surface text-sm shadow-card">
   {% for c in claims %}
   <div class="flex items-baseline gap-4 px-5 py-3.5">
-    <span class="w-36 shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-faint">{{ c.category|replace("_", " ") }}</span>
-    <span class="leading-relaxed text-ink-dark">“{{ c.statement }}”</span>
-    <span class="tnum ml-auto shrink-0 font-mono text-ink-muted">{{ c.value }}</span>
+    <span class="w-36 shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] text-fg-faint">{{ c.category|replace("_", " ") }}</span>
+    <span class="leading-relaxed text-fg-2">“{{ c.statement }}”</span>
+    <span class="tnum ml-auto shrink-0 font-mono text-fg-soft">{{ c.value }}</span>
   </div>
   {% endfor %}
 </div>
 {% endif %}
 
-<h2 class="mb-4 mt-14 font-mono text-xs uppercase tracking-[0.16em] text-olive-deep">interviews</h2>
+<h2 class="mb-4 mt-14 font-mono text-xs uppercase tracking-[0.16em] text-accent-text">interviews</h2>
 {% for iv in interviews %}
-<div class="mb-5 rounded-[14px] border border-line bg-cream p-6 shadow-card">
+<div class="mb-5 rounded-[14px] border border-line bg-surface p-6 shadow-card">
   <div class="mb-4 flex items-baseline justify-between">
     <span class="font-bold tracking-[-0.01em]">{{ iv.interviewer or "Interview" }}</span>
-    <span class="tnum font-mono text-xs text-ink-faint">{{ iv.meeting_date.strftime("%b %d, %Y") }}</span>
+    <span class="tnum font-mono text-xs text-fg-faint">{{ iv.meeting_date.strftime("%b %d, %Y") }}</span>
   </div>
   <table class="w-full text-sm">
     {% for r in by_iv[iv.id] %}
     <tr class="border-t border-line">
-      <td class="w-44 py-3 pr-4 font-semibold text-ink-dark">{{ r.competency }}</td>
+      <td class="w-44 py-3 pr-4 font-semibold text-fg-2">{{ r.competency }}</td>
       <td class="w-28 py-3">
-        {% if r.score %}<span class="tnum rounded-md bg-olive-wash px-2 py-0.5 font-mono text-xs text-olive-deep">{{ r.score }} / 4</span>
-        {% else %}<span class="rounded-md border border-dashed border-line-2 px-2 py-0.5 font-mono text-[11px] text-ink-faint">Not assessed</span>{% endif %}
+        {% if r.score %}<span class="tnum rounded-md bg-accent-wash px-2 py-0.5 font-mono text-xs text-accent-text">{{ r.score }} / 4</span>
+        {% else %}<span class="rounded-md border border-dashed border-line-2 px-2 py-0.5 font-mono text-[11px] text-fg-faint">Not assessed</span>{% endif %}
       </td>
-      <td class="py-3 leading-relaxed text-ink-muted">{{ r.evidence|join("; ") if r.evidence else r.rationale }}</td>
+      <td class="py-3 leading-relaxed text-fg-soft">{{ r.evidence|join("; ") if r.evidence else r.rationale }}</td>
     </tr>
     {% endfor %}
   </table>
@@ -73,14 +73,14 @@
 {% endfor %}
 
 {% if flags %}
-<h2 class="mb-4 mt-14 font-mono text-xs uppercase tracking-[0.16em] text-clay-deep">interview quality flags</h2>
+<h2 class="mb-4 mt-14 font-mono text-xs uppercase tracking-[0.16em] text-danger-text">interview quality flags</h2>
 {% for f in flags %}
-<div class="mb-3 flex items-start gap-3 rounded-[12px] bg-clay-wash px-5 py-4 text-sm leading-relaxed">
-  <span class="mt-0.5 text-clay-deep">⚠</span>
+<div class="mb-3 flex items-start gap-3 rounded-[12px] bg-danger-wash px-5 py-4 text-sm leading-relaxed">
+  <span class="mt-0.5 text-danger-text">⚠</span>
   <div>
-    <span class="mr-2 rounded-md bg-cream px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] text-clay-deep">{{ f.type|replace("_", " ") }}</span>
-    <span class="text-ink-dark">“{{ f.excerpt }}”</span>
-    <span class="text-ink-muted"> — {{ f.note }}</span>
+    <span class="mr-2 rounded-md bg-surface px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] text-danger-text">{{ f.type|replace("_", " ") }}</span>
+    <span class="text-fg-2">“{{ f.excerpt }}”</span>
+    <span class="text-fg-soft"> — {{ f.note }}</span>
   </div>
 </div>
 {% endfor %}
