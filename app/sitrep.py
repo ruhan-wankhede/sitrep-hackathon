@@ -42,5 +42,17 @@ def parse_sitrep_request(payload: dict) -> NormalizedTask:
         raw=payload,
     )
 
+def markdown_artifact(title: str, content: str) -> dict:
+    return {"type": "markdown", "title": title, "content": content}
+
+def link_artifact(title: str, url: str) -> dict:
+    return {"type": "link", "title": title, "content": url}
+
+def build_response(artifacts: list[dict], logs: list[str] | None = None) -> dict:
+    resp: dict = {"artifacts": artifacts}
+    if logs:
+        resp["logs"] = logs
+    return resp
+
 def artifact_response(title: str, content: str) -> dict:
-    return {"artifacts": [{"type": "markdown", "title": title, "content": content}]}
+    return build_response([markdown_artifact(title, content)])

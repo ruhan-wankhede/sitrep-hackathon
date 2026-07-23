@@ -21,14 +21,23 @@ def fake_llm(**kw):
                             "evidence": ["explained a sharding migration in depth"], "rationale": "strong"}]}
     if name == "FlagSet":
         return {"flags": []}
+    if name == "Brief":
+        return {"probes": [{"competency": "System design", "question": "Design a rate limiter.", "reason": "gap"}],
+                "feedback_email": "Thanks for your time — your migration deep-dive was impressive."}
     return {"contradictory": False}
 
 def test_run_produces_scorecard_artifact(client_with_db, monkeypatch):
     monkeypatch.setattr(llm, "PROVIDERS", [fake_llm])
     resp = client_with_db.post("/run", json=PAYLOAD)
     assert resp.status_code == 200
-    content = resp.json()["artifacts"][0]["content"]
+    body = resp.json()
+    content = body["artifacts"][0]["content"]
     assert "Technical depth" in content and "Exceptional" in content
+    # feedback draft artifact and a first-class dashboard link artifact are included
+    assert any(a["type"] == "markdown" and "feedback" in a["title"].lower() for a in body["artifacts"])
+    link = next(a for a in body["artifacts"] if a["type"] == "link")
+    assert link["content"].startswith("http") and "/d/" in link["content"]
+    assert isinstance(body["logs"], list) and body["logs"]
 
 def test_non_interview_gets_polite_artifact(client_with_db, monkeypatch):
     def not_interview(**kw):

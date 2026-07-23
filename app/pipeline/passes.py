@@ -116,29 +116,39 @@ class Probe(BaseModel):
     question: str
     reason: str = ""
 
-class ProbeSet(BaseModel):
+class Brief(BaseModel):
     probes: list[Probe] = []
+    feedback_email: str = ""
 
-_PROBE_SYSTEM = """You brief the NEXT interviewer for a candidate mid-loop.
-Given competencies nobody has probed yet, and competencies where the evidence
-so far is weak or vague, write sharp, specific questions the next interviewer
-should ask. Rules:
-- One to two questions per competency, tied to that competency.
-- For unprobed competencies, ask questions that would surface real signal.
-- For weak-evidence competencies, target the exact gap (e.g. "they claimed to
-  'lead the migration' but gave no specifics — ask who made the architecture call").
-- Never generic HR filler. Every question must be answerable in an interview
-  and produce evidence. Give a one-line reason per question."""
+_BRIEF_SYSTEM = """You prepare two things for a hiring team from the panel's evidence so far.
 
-def probe_questions(role_title: str, candidate_name: str,
-                    unprobed: list[str], weak_items: list[dict]) -> ProbeSet:
+1) probes — questions for the NEXT interviewer:
+- one or two per competency, tied to that competency
+- for unprobed competencies, questions that surface real signal
+- for weak-evidence competencies, target the exact gap (e.g. "they claimed to
+  'lead the migration' but gave no specifics — ask who made the architecture call")
+- never generic filler; each must be answerable in an interview and produce evidence
+- give a one-line reason per question
+
+2) feedback_email — a short, warm draft the recruiter could adapt to send the candidate:
+- ground every point in what actually happened in the interviews; strengths first, then growth areas
+- concrete and kind, no clichés
+- do NOT state a hire/reject decision — that is the recruiter's call
+- 120-180 words, first person from the hiring team"""
+
+def generate_brief(role_title: str, candidate_name: str, unprobed: list[str],
+                   weak_items: list[dict], strengths: list[dict]) -> Brief:
     weak = "\n".join(
         f"- {w['competency']} (scored {w['score']}/4): {'; '.join(w.get('evidence') or []) or w.get('rationale', '')}"
         for w in weak_items
     ) or "(none)"
+    strong = "\n".join(
+        f"- {s['competency']} (scored {s['score']}/4): {s.get('evidence', '')}" for s in strengths
+    ) or "(none assessed yet)"
     prompt = (
         f"Role: {role_title}\nCandidate: {candidate_name}\n\n"
         f"Unprobed competencies: {', '.join(unprobed) or '(none)'}\n\n"
-        f"Weak-evidence competencies:\n{weak}"
+        f"Weak-evidence competencies:\n{weak}\n\n"
+        f"Assessed strengths:\n{strong}"
     )
-    return complete_json(prompt, ProbeSet, system=_PROBE_SYSTEM)
+    return complete_json(prompt, Brief, system=_BRIEF_SYSTEM)
