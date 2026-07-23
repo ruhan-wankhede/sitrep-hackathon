@@ -65,3 +65,11 @@ class FlagRow(Base):
     type: Mapped[str] = mapped_column(String(40))
     excerpt: Mapped[str] = mapped_column(Text, default="")
     note: Mapped[str] = mapped_column(Text, default="")
+
+class ProbeRow(Base):
+    __tablename__ = "probes"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    candidate_id: Mapped[int] = mapped_column(ForeignKey("candidates.id"))
+    competency: Mapped[str] = mapped_column(String(200))
+    question: Mapped[str] = mapped_column(Text)
+    reason: Mapped[str] = mapped_column(Text, default="")

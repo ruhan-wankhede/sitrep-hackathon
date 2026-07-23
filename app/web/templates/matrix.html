@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ role.title|title }} — matrix{% endblock %}
+{% set REC = {'accent':'bg-accent-wash text-accent-text','warn':'bg-warn-wash text-warn-text','danger':'bg-danger-wash text-danger-text','muted':'bg-panel text-fg-soft'} %}
 {% block content %}
 <div x-data="{open:null}" @keydown.escape.window="open=null">
 
@@ -21,79 +22,135 @@
 </div>
 {% else %}
 
-<div class="overflow-x-auto rounded-[16px] border border-line bg-surface shadow-card">
-<table class="w-full text-sm">
-  <thead>
-    <tr class="border-b border-line bg-panel">
-      <th class="w-52 px-6 py-5 text-left font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-fg-faint">Competency</th>
-      {% for col in columns %}
-      <th class="px-6 py-5 text-left align-top">
-        <div class="flex items-start gap-3">
-          {% set parts = col.candidate.name.split() %}
-          <span class="grid h-10 w-10 shrink-0 place-items-center rounded-[11px] bg-accent text-xs font-bold uppercase text-onaccent">
-            {{- parts[:2] | map('first') | join('') if parts else '?' -}}
-          </span>
-          <div>
-            <a href="/d/{{ token }}/candidate/{{ col.candidate.id }}"
-               class="font-bold capitalize tracking-[-0.01em] transition hover:text-accent-text">{{ col.candidate.name }}</a>
-            <div class="tnum mt-0.5 font-mono text-[11px] text-fg-faint">{{ col.n_interviews }} interview{{ '' if col.n_interviews == 1 else 's' }}</div>
-            <div class="mt-2 flex flex-wrap gap-1.5">
-              {% if col.conflict %}
-              <span class="rounded-md bg-danger-wash px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] text-danger-text">⚠ claim conflict</span>
-              {% endif %}
-              {% if col.gap %}
-              <span class="rounded-md bg-warn-wash px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] text-warn-text">◐ coverage gap</span>
+<div class="lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-6 lg:items-start">
+  <div class="min-w-0">
+    <div class="overflow-x-auto rounded-[16px] border border-line bg-surface shadow-card">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-line bg-panel">
+          <th class="w-52 px-6 py-5 text-left font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-fg-faint">Competency</th>
+          {% for col in columns %}
+          <th class="px-6 py-5 text-left align-top">
+            <div class="flex items-start gap-3">
+              {% set parts = col.candidate.name.split() %}
+              <span class="grid h-10 w-10 shrink-0 place-items-center rounded-[11px] bg-accent text-xs font-bold uppercase text-onaccent">
+                {{- parts[:2] | map('first') | join('') if parts else '?' -}}
+              </span>
+              <div>
+                <a href="/d/{{ token }}/candidate/{{ col.candidate.id }}"
+                   class="font-bold capitalize tracking-[-0.01em] transition hover:text-accent-text">{{ col.candidate.name }}</a>
+                <div class="tnum mt-0.5 font-mono text-[11px] text-fg-faint">{{ col.n_interviews }} interview{{ '' if col.n_interviews == 1 else 's' }}</div>
+                <div class="mt-2 flex flex-wrap gap-1.5">
+                  {% if col.conflict %}
+                  <span class="rounded-md bg-danger-wash px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] text-danger-text">⚠ claim conflict</span>
+                  {% endif %}
+                  {% if col.gap %}
+                  <span class="rounded-md bg-warn-wash px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] text-warn-text">◐ coverage gap</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for comp in rubric %}
+        <tr class="border-b border-line transition hover:bg-panel">
+          <td class="px-6 py-4 font-semibold text-fg-2">{{ comp }}</td>
+          {% for col in columns %}
+          {% for cell in col.cells %}{% if cell.competency == comp %}
+          <td class="cursor-pointer px-6 py-4 transition duration-150 hover:bg-accent-wash"
+              data-key="{{ col.candidate.name }}|{{ comp }}"
+              :class="open && open.key === $el.dataset.key ? 'ring-2 ring-inset ring-accent bg-accent-wash' : ''"
+              data-detail='{{ cell.detail|tojson }}'
+              @click="open = {key: $el.dataset.key, cand: '{{ col.candidate.name|e }}', comp: '{{ comp|e }}', detail: JSON.parse($el.dataset.detail)}">
+            {% if cell.avg %}
+              {% set full = cell.avg|round(0, 'floor')|int %}
+              {% set tone = 'bg-accent' if cell.avg >= 2.5 else ('bg-warn' if cell.avg >= 1.5 else 'bg-danger') %}
+              <div class="flex items-center gap-3">
+                <div class="flex gap-1">
+                  {%- for i in range(4) %}
+                  <span class="h-1.5 w-5 rounded-full {{ tone if i < full else 'bg-track' }}"></span>
+                  {% endfor -%}
+                </div>
+                <span class="tnum font-mono text-sm text-fg">{{ cell.avg }}</span>
+              </div>
+            {% else %}
+              <span class="inline-block rounded-md border border-dashed border-line-2 px-2 py-0.5 font-mono text-[11px] text-fg-faint">Not assessed</span>
+            {% endif %}
+          </td>
+          {% endif %}{% endfor %}
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="border-t-2 border-line-2 bg-panel">
+          <td class="px-6 py-5 align-top font-mono text-[10px] uppercase tracking-[0.16em] text-fg-faint">Panel verdict</td>
+          {% for col in columns %}
+          <td class="px-6 py-5 align-top">
+            <div class="flex items-baseline gap-2">
+              <span class="tnum font-display text-3xl leading-none text-accent-text">{{ col.composite if col.composite is not none else '—' }}</span>
+              {% if col.rank is defined %}
+              <span class="tnum rounded-md bg-surface px-1.5 py-0.5 font-mono text-[10px] text-fg-soft">#{{ col.rank }}{% if n_ranked > 1 %} of {{ n_ranked }}{% endif %}</span>
               {% endif %}
             </div>
-          </div>
-        </div>
-      </th>
-      {% endfor %}
-    </tr>
-  </thead>
-  <tbody>
-    {% for comp in rubric %}
-    <tr class="border-b border-line last:border-b-0 transition hover:bg-panel">
-      <td class="px-6 py-4 font-semibold text-fg-2">{{ comp }}</td>
-      {% for col in columns %}
-      {% for cell in col.cells %}{% if cell.competency == comp %}
-      <td class="cursor-pointer px-6 py-4 transition duration-150 hover:bg-accent-wash"
-          data-cand="{{ col.candidate.name }}" data-comp="{{ comp }}" data-detail='{{ cell.detail|tojson }}'
-          @click="open = {cand: $el.dataset.cand, comp: $el.dataset.comp, detail: JSON.parse($el.dataset.detail)}">
-        {% if cell.avg %}
-          {% set full = cell.avg|round(0, 'floor')|int %}
-          {% set tone = 'bg-accent' if cell.avg >= 2.5 else ('bg-warn' if cell.avg >= 1.5 else 'bg-danger') %}
-          <div class="flex items-center gap-3">
-            <div class="flex gap-1">
-              {%- for i in range(4) %}
-              <span class="h-1.5 w-5 rounded-full {{ tone if i < full else 'bg-track' }}"></span>
-              {% endfor -%}
-            </div>
-            <span class="tnum font-mono text-sm text-fg">{{ cell.avg }}</span>
-          </div>
-        {% else %}
-          <span class="inline-block rounded-md border border-dashed border-line-2 px-2 py-0.5 font-mono text-[11px] text-fg-faint">Not assessed</span>
-        {% endif %}
-      </td>
-      {% endif %}{% endfor %}
-      {% endfor %}
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-</div>
+            <span class="mt-2 inline-block rounded-md px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.06em] {{ REC[col.recommendation.tone] }}">{{ col.recommendation.label }}</span>
+            <p class="mt-1.5 max-w-[220px] text-[11px] leading-snug text-fg-soft">{{ col.recommendation.reason }}</p>
+          </td>
+          {% endfor %}
+        </tr>
+      </tfoot>
+    </table>
+    </div>
 
-<div class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 px-2 font-mono text-[11px] text-fg-faint">
-  <span><span class="mr-1.5 inline-block h-1.5 w-5 rounded-full bg-danger align-middle"></span>1 weak</span>
-  <span><span class="mr-1.5 inline-block h-1.5 w-5 rounded-full bg-warn align-middle"></span>2 developing</span>
-  <span><span class="mr-1.5 inline-block h-1.5 w-5 rounded-full bg-accent align-middle"></span>3 solid</span>
-  <span><span class="mr-1.5 inline-block h-1.5 w-5 rounded-full bg-accent-deep align-middle"></span>4 exceptional</span>
-  <span class="ml-auto">scores are panel averages · every score is evidence-backed</span>
+    <div class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 px-2 font-mono text-[11px] text-fg-faint">
+      <span><span class="mr-1.5 inline-block h-1.5 w-5 rounded-full bg-danger align-middle"></span>1 weak</span>
+      <span><span class="mr-1.5 inline-block h-1.5 w-5 rounded-full bg-warn align-middle"></span>2 developing</span>
+      <span><span class="mr-1.5 inline-block h-1.5 w-5 rounded-full bg-accent align-middle"></span>3 solid</span>
+      <span><span class="mr-1.5 inline-block h-1.5 w-5 rounded-full bg-accent-deep align-middle"></span>4 exceptional</span>
+      <span class="ml-auto">scores are panel averages · every score is evidence-backed</span>
+    </div>
+  </div>
+
+  <!-- docked evidence rail (large screens) -->
+  <aside class="hidden lg:block lg:sticky lg:top-24">
+    <div x-show="!open" class="rounded-[16px] border border-dashed border-line-2 bg-surface p-6">
+      <p class="mb-2 font-mono text-[10px] uppercase tracking-[0.16em] text-fg-faint">evidence</p>
+      <p class="text-sm leading-relaxed text-fg-soft">Click any cell to see per-interviewer evidence here — the matrix stays put, so you can move cell to cell.</p>
+    </div>
+    <div x-cloak x-show="open" class="max-h-[calc(100vh-8rem)] overflow-y-auto rounded-[16px] border border-line bg-surface p-6 shadow-card">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-accent-text" x-text="open?.comp"></p>
+          <h2 class="mt-1 font-display text-2xl uppercase capitalize leading-[0.95]" x-text="open?.cand"></h2>
+        </div>
+        <button @click="open=null" aria-label="Close"
+                class="shrink-0 grid h-7 w-7 place-items-center rounded-lg text-fg-faint transition hover:bg-panel hover:text-fg">✕</button>
+      </div>
+      <div class="mt-5 space-y-3">
+        <template x-for="d in (open?.detail || [])">
+          <div class="rounded-[12px] border border-line bg-paper p-4">
+            <div class="flex items-baseline justify-between">
+              <span class="text-sm font-bold tracking-[-0.01em]" x-text="d.interviewer || 'interviewer'"></span>
+              <span class="tnum font-mono text-xs" x-text="d.score ? d.score + ' / 4' : 'Not assessed'"
+                    :class="d.score ? 'text-accent-text' : 'text-fg-faint'"></span>
+            </div>
+            <template x-for="e in (d.evidence || [])">
+              <blockquote class="mt-2 border-l-2 border-accent pl-3 text-sm leading-relaxed text-fg-2" x-text="e"></blockquote>
+            </template>
+            <p class="mt-2 text-xs leading-relaxed text-fg-soft" x-text="d.rationale"></p>
+          </div>
+        </template>
+      </div>
+    </div>
+  </aside>
 </div>
 {% endif %}
 
-<!-- slide-over -->
-<div x-cloak x-show="open" class="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true">
+<!-- modal slide-over (small screens only) -->
+<div x-cloak x-show="open" class="fixed inset-0 z-50 flex justify-end lg:hidden" role="dialog" aria-modal="true">
   <div x-show="open" x-transition.opacity.duration.200ms
        @click="open=null" class="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
   <div x-show="open"

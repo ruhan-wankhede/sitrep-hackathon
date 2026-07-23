@@ -91,3 +91,35 @@ Return an empty list when nothing qualifies. Include a short excerpt for each fl
 
 def detect_flags(summary: str) -> FlagSet:
     return complete_json(f"Meeting summary:\n{summary}", FlagSet, system=_FLAGS_SYSTEM)
+
+class Probe(BaseModel):
+    competency: str
+    question: str
+    reason: str = ""
+
+class ProbeSet(BaseModel):
+    probes: list[Probe] = []
+
+_PROBE_SYSTEM = """You brief the NEXT interviewer for a candidate mid-loop.
+Given competencies nobody has probed yet, and competencies where the evidence
+so far is weak or vague, write sharp, specific questions the next interviewer
+should ask. Rules:
+- One to two questions per competency, tied to that competency.
+- For unprobed competencies, ask questions that would surface real signal.
+- For weak-evidence competencies, target the exact gap (e.g. "they claimed to
+  'lead the migration' but gave no specifics — ask who made the architecture call").
+- Never generic HR filler. Every question must be answerable in an interview
+  and produce evidence. Give a one-line reason per question."""
+
+def probe_questions(role_title: str, candidate_name: str,
+                    unprobed: list[str], weak_items: list[dict]) -> ProbeSet:
+    weak = "\n".join(
+        f"- {w['competency']} (scored {w['score']}/4): {'; '.join(w.get('evidence') or []) or w.get('rationale', '')}"
+        for w in weak_items
+    ) or "(none)"
+    prompt = (
+        f"Role: {role_title}\nCandidate: {candidate_name}\n\n"
+        f"Unprobed competencies: {', '.join(unprobed) or '(none)'}\n\n"
+        f"Weak-evidence competencies:\n{weak}"
+    )
+    return complete_json(prompt, ProbeSet, system=_PROBE_SYSTEM)

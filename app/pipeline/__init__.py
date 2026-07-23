@@ -6,6 +6,7 @@ from app.llm import LLMUnavailable
 from app.pipeline import passes
 from app.pipeline.artifact import compose_markdown, panel_snapshot
 from app.pipeline.persist import save_interview
+from app.pipeline.probes import refresh_probes
 from app.rubrics import resolve_rubric
 from app.sitrep import NormalizedTask, artifact_response
 
@@ -26,6 +27,8 @@ def run_pipeline(normalized: NormalizedTask, source: str, session: Session) -> d
         interview = save_interview(session, extraction, scoreset, flagset,
                                    normalized.summary, normalized.raw, source, rubric)
         snapshot = panel_snapshot(session, interview)
+        refresh_probes(session, interview.candidate_id, extraction.role_title,
+                       extraction.candidate_name, snapshot["coverage"]["unassessed"])
         return artifact_response(f"Scorecard: {extraction.candidate_name.title()}",
                                  compose_markdown(interview, scoreset, flagset, snapshot))
     except LLMUnavailable as e:

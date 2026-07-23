@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% block title %}{{ cand.name|title }}{% endblock %}
+{% set REC = {'accent':'bg-accent-wash text-accent-text','warn':'bg-warn-wash text-warn-text','danger':'bg-danger-wash text-danger-text','muted':'bg-panel text-fg-soft'} %}
 {% block content %}
 <nav class="mb-10 font-mono text-xs text-fg-faint">
   <a href="/d/{{ token }}/role/{{ cand.role_id }}" class="transition hover:text-accent-text">← comparison matrix</a>
 </nav>
 
-<div class="mb-12 flex items-center gap-5">
+<div class="mb-8 flex items-center gap-5">
   {% set parts = cand.name.split() %}
   <span class="grid h-16 w-16 shrink-0 place-items-center rounded-[14px] bg-accent text-xl font-bold uppercase text-onaccent">
     {{- parts[:2] | map('first') | join('') if parts else '?' -}}
@@ -14,6 +15,15 @@
     <h1 class="font-display text-6xl uppercase leading-[0.9] tracking-[0.005em]">{{ cand.name }}</h1>
     <p class="tnum mt-2 font-mono text-sm text-fg-soft">{{ interviews|length }} interview{{ '' if interviews|length == 1 else 's' }} on record</p>
   </div>
+</div>
+
+<div class="mb-10 flex flex-wrap items-center gap-4 rounded-[14px] border border-line bg-surface px-6 py-5 shadow-card">
+  <div class="flex items-baseline gap-2">
+    <span class="tnum font-display text-4xl leading-none text-accent-text">{{ composite if composite is not none else '—' }}</span>
+    <span class="font-mono text-[11px] uppercase tracking-[0.12em] text-fg-faint">/ 4 composite</span>
+  </div>
+  <span class="rounded-md px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.06em] {{ REC[recommendation.tone] }}">{{ recommendation.label }}</span>
+  <p class="min-w-[12rem] flex-1 text-[13px] leading-snug text-fg-soft">{{ recommendation.reason }}</p>
 </div>
 
 {% if coverage.unassessed %}
@@ -36,6 +46,29 @@
   </div>
 </div>
 {% endfor %}
+
+{% if probes_by_comp %}
+<h2 class="mb-1 mt-14 font-mono text-xs uppercase tracking-[0.16em] text-accent-text">brief for the next interviewer</h2>
+<p class="mb-4 text-[13px] text-fg-soft">Auto-generated from coverage gaps and weak evidence — questions to close before advancing.</p>
+<div class="grid gap-4 md:grid-cols-2">
+  {% for comp, plist in probes_by_comp.items() %}
+  <div class="rounded-[14px] border border-line bg-surface p-5 shadow-card">
+    <div class="mb-3 font-semibold text-fg-2">{{ comp }}</div>
+    <ul class="space-y-3">
+      {% for p in plist %}
+      <li>
+        <div class="flex gap-2 text-sm leading-relaxed text-fg">
+          <span class="text-accent-text">→</span>
+          <span>{{ p.question }}</span>
+        </div>
+        {% if p.reason %}<p class="mt-0.5 pl-4 text-[12px] text-fg-faint">{{ p.reason }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
 
 {% if claims %}
 <h2 class="mb-4 mt-14 font-mono text-xs uppercase tracking-[0.16em] text-accent-text">claim ledger</h2>

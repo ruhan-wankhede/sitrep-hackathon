@@ -26,6 +26,33 @@ def disagreements(rows: list[dict]) -> list[dict]:
                 out.append({"competency": comp, "spread": spread, "scores": scores})
     return out
 
+def composite(cell_averages: list[float]) -> float | None:
+    """Overall score for a candidate: the mean of their per-competency panel
+    averages, so each competency counts once regardless of how many
+    interviewers probed it. None when nothing has been assessed."""
+    vals = [v for v in cell_averages if v is not None]
+    if not vals:
+        return None
+    return round(sum(vals) / len(vals), 1)
+
+_BANDS = [(3.5, "Strong hire", "accent"), (2.8, "Hire", "accent"),
+          (2.0, "Lean no", "warn"), (0.0, "No hire", "danger")]
+
+def recommendation(comp: float | None, n_assessed: int, blockers: list[str]) -> dict:
+    """Evidence-gated hiring verdict. Any blocker (unresolved claim
+    contradiction, compliance flag) caps the verdict at 'Needs follow-up'
+    regardless of score — the agent never green-lights over an open concern."""
+    if comp is None:
+        return {"label": "Insufficient data", "tone": "muted",
+                "reason": "No competencies assessed yet."}
+    if blockers:
+        return {"label": "Needs follow-up", "tone": "warn",
+                "reason": "Resolve before advancing: " + "; ".join(blockers) + "."}
+    label, tone = next((lbl, tn) for cut, lbl, tn in _BANDS if comp >= cut)
+    unit = "competency" if n_assessed == 1 else "competencies"
+    return {"label": label, "tone": tone,
+            "reason": f"Composite {comp}/4 across {n_assessed} assessed {unit}; no blocking concerns."}
+
 def contradiction_candidates(claims: list[dict]) -> list[tuple[dict, dict]]:
     by_cat: dict[str, list] = defaultdict(list)
     for c in claims:

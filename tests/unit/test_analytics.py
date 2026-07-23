@@ -1,7 +1,26 @@
 import app.llm as llm
 from app.analytics import (
-    contradiction_candidates, confirm_contradiction, coverage, disagreements,
+    composite, contradiction_candidates, confirm_contradiction, coverage,
+    disagreements, recommendation,
 )
+
+def test_composite_averages_competency_scores():
+    assert composite([4.0, 4.0, 3.0, None]) == 3.7
+    assert composite([None, None]) is None
+
+def test_recommendation_bands_by_composite():
+    assert recommendation(3.6, 5, [])["label"] == "Strong hire"
+    assert recommendation(3.0, 5, [])["label"] == "Hire"
+    assert recommendation(2.2, 5, [])["label"] == "Lean no"
+    assert recommendation(1.4, 5, [])["label"] == "No hire"
+
+def test_recommendation_blocker_caps_verdict_regardless_of_score():
+    r = recommendation(3.9, 5, ["unresolved claim contradiction"])
+    assert r["label"] == "Needs follow-up"
+    assert "unresolved claim contradiction" in r["reason"]
+
+def test_recommendation_insufficient_data_when_no_composite():
+    assert recommendation(None, 0, [])["label"] == "Insufficient data"
 
 def test_coverage_splits_assessed_and_unassessed():
     rows = [
