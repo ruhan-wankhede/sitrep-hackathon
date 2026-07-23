@@ -35,7 +35,7 @@ def _blockers(session, candidate_id, iv_ids, conflict: bool) -> list[str]:
 def _has_conflict(session, candidate_id) -> bool:
     vals = defaultdict(set)
     for c in session.query(ClaimRow).filter(ClaimRow.candidate_id == candidate_id).all():
-        if c.value:
+        if c.value and c.category != "other":  # never flag the miscellaneous bucket
             vals[c.category].add(c.value)
     return any(len(v) > 1 for v in vals.values())
 

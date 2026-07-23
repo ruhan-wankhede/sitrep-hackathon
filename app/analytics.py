@@ -56,7 +56,9 @@ def recommendation(comp: float | None, n_assessed: int, blockers: list[str]) -> 
 def contradiction_candidates(claims: list[dict]) -> list[tuple[dict, dict]]:
     by_cat: dict[str, list] = defaultdict(list)
     for c in claims:
-        if c.get("value"):
+        # "other" is a catch-all bucket — different miscellaneous facts are not
+        # contradictions, so never pair them.
+        if c.get("value") and c.get("category") != "other":
             by_cat[c["category"]].append(c)
     pairs = []
     for cat, items in by_cat.items():

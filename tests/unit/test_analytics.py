@@ -53,6 +53,13 @@ def test_contradiction_candidates_same_category_conflicting_values():
     assert len(pairs) == 1
     assert {pairs[0][0]["value"], pairs[0][1]["value"]} == {"8", "3"}
 
+def test_contradiction_candidates_ignores_other_bucket():
+    claims = [
+        {"category": "other", "statement": "two startups", "value": "2 startups", "interview_id": 1},
+        {"category": "other", "statement": "two juniors", "value": "2 juniors", "interview_id": 2},
+    ]
+    assert contradiction_candidates(claims) == []
+
 def test_confirm_contradiction_uses_llm_verdict(monkeypatch):
     monkeypatch.setattr(llm, "PROVIDERS", [lambda **kw: {"contradictory": True}])
     assert confirm_contradiction({"statement": "led 8"}, {"statement": "team of 3"}) is True
