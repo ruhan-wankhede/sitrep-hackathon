@@ -1,12 +1,25 @@
-from typing import Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.llm import complete_json
 
+_CLAIM_CATS = {"team_size", "tenure", "role_scope", "project_ownership", "metric", "other"}
+_FLAG_TYPES = {"leading_question", "non_job_related", "vague_feedback"}
+
+def _slug(v) -> str:
+    return str(v or "").strip().lower().replace(" ", "_").replace("-", "_")
+
 class Claim(BaseModel):
-    category: Literal["team_size", "tenure", "role_scope", "project_ownership", "metric", "other"]
+    # Not a strict Literal on purpose: an off-vocabulary category from the model
+    # must never fail the whole extraction. Normalize, and snap unknowns to "other".
+    category: str = "other"
     statement: str
     value: str = ""
+
+    @field_validator("category", mode="before")
+    @classmethod
+    def _norm_category(cls, v):
+        s = _slug(v)
+        return s if s in _CLAIM_CATS else "other"
 
 class Exchange(BaseModel):
     question: str
@@ -30,9 +43,15 @@ class ScoreSet(BaseModel):
     scores: list[CompetencyScore] = []
 
 class Flag(BaseModel):
-    type: Literal["leading_question", "non_job_related", "vague_feedback"]
+    type: str = "vague_feedback"
     excerpt: str = ""
     note: str = ""
+
+    @field_validator("type", mode="before")
+    @classmethod
+    def _norm_type(cls, v):
+        s = _slug(v)
+        return s if s in _FLAG_TYPES else "vague_feedback"
 
 class FlagSet(BaseModel):
     flags: list[Flag] = []

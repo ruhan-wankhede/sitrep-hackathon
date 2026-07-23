@@ -1,7 +1,21 @@
 from app.pipeline.passes import (
-    CompetencyScore, ScoreSet, Extraction, apply_evidence_gate, extract, score,
+    Claim, CompetencyScore, Flag, ScoreSet, Extraction, apply_evidence_gate, extract, score,
 )
 import app.llm as llm
+
+def test_off_vocabulary_category_and_flag_type_snap_to_fallback():
+    # An unexpected category from the model must not fail extraction — it snaps to "other".
+    assert Claim(category="Leadership Scope", statement="led a team").category == "other"
+    assert Claim(category="Team Size", statement="team of 8").category == "team_size"
+    assert Flag(type="illegal question", excerpt="x").type == "vague_feedback"
+    assert Flag(type="Non Job Related", excerpt="x").type == "non_job_related"
+
+def test_extraction_survives_unknown_claim_category(monkeypatch):
+    monkeypatch.setattr(llm, "PROVIDERS", [lambda **kw: {
+        "is_interview": True, "candidate_name": "A", "role_title": "Engineer", "interviewer": "P",
+        "exchanges": [], "claims": [{"category": "seniority", "statement": "was senior-most", "value": "1"}]}])
+    ext = extract("summary", "t", "d", [])
+    assert ext.claims[0].category == "other"
 
 def test_evidence_gate_demotes_unevidenced_scores():
     ss = ScoreSet(scores=[
