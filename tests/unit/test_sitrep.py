@@ -20,6 +20,14 @@ def test_tolerates_flat_and_missing_fields():
     assert n.title == "t" and n.summary == "s"
     assert n.description == "" and n.instructions == "" and n.attendees == []
 
+def test_parses_object_form_attendees():
+    # The real SitRep contract sends attendees as [{id, name}] objects.
+    n = parse_sitrep_request({
+        "task": {"title": "t"}, "summary": "s",
+        "attendees": [{"id": "u1", "name": "Priya Nair"}, {"id": "u2", "name": "Aisha Verma"}],
+    })
+    assert n.attendees == ["Priya Nair", "Aisha Verma"]
+
 def test_artifact_response_envelope():
     r = artifact_response("T", "C")
     assert r == {"artifacts": [{"type": "markdown", "title": "T", "content": "C"}]}

@@ -20,6 +20,7 @@ def _startup():
     bind_default_engine()
 
 @app.get("/healthz")
+@app.get("/health")
 def healthz():
     return {"ok": True}
 
