@@ -15,6 +15,7 @@ Interview Scorecard runs after each interview and scores the candidate against a
 - **Comparison matrix** — a live dashboard ranking every candidate for a role, each score one click from the evidence behind it.
 - **Hire recommendation with a guardrail** — a banded verdict (Strong hire → No hire) where any unresolved contradiction or compliance flag *caps* the verdict at "Needs follow-up," no matter how high the raw score. In our demo the top-ranked candidate is deliberately held back because of an unresolved claim — the agent refuses to green-light over an open concern.
 - **Next-interviewer brief** — turns coverage gaps and weak answers into specific questions for the next round.
+- **Candidate feedback draft** — a warm, evidence-cited note the recruiter can adapt to send the candidate, delivered straight back into SitRep as a post-meeting artifact.
 - **Compliance flags** — surfaces non-job-related questions (family plans, age) as a consistency-and-risk signal.
 
 ## How we built it
@@ -41,4 +42,4 @@ LLMs are excellent extractors and unreliable accountants — the more logic we m
 
 ## What's next
 
-A rubric editor in the dashboard so teams can tune competencies without touching code; analysing the debrief meeting itself for groupthink (score drift after the loudest voice speaks); per-workspace multi-tenancy; one-click delivery of the committee packet to Slack; and HMAC verification of SitRep's signed webhooks.
+An interviewer-calibration view (is one interviewer consistently harsher than the panel, or asking leading questions?); a protected-attribute detector for deeper DEI compliance; a rubric editor in the dashboard; analysing the debrief meeting itself for groupthink (score drift after the loudest voice speaks); per-workspace multi-tenancy; one-click delivery of the committee packet to Slack; and HMAC verification of SitRep's signed webhooks.
