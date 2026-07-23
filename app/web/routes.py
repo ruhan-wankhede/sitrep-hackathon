@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 
-from app.analytics import composite, coverage, disagreements, recommendation
+from app.analytics import SINGLE_VALUED_CATS, composite, coverage, disagreements, recommendation
 from app.config import settings
 from app.db import SessionLocal
 from app.models import Candidate, ClaimRow, FlagRow, Interview, ProbeRow, Role, ScorecardRow
@@ -35,7 +35,7 @@ def _blockers(session, candidate_id, iv_ids, conflict: bool) -> list[str]:
 def _has_conflict(session, candidate_id) -> bool:
     vals = defaultdict(set)
     for c in session.query(ClaimRow).filter(ClaimRow.candidate_id == candidate_id).all():
-        if c.value and c.category != "other":  # never flag the miscellaneous bucket
+        if c.value and c.category in SINGLE_VALUED_CATS:  # only single-fact categories
             vals[c.category].add(c.value)
     return any(len(v) > 1 for v in vals.values())
 

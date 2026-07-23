@@ -53,10 +53,14 @@ def test_contradiction_candidates_same_category_conflicting_values():
     assert len(pairs) == 1
     assert {pairs[0][0]["value"], pairs[0][1]["value"]} == {"8", "3"}
 
-def test_contradiction_candidates_ignores_other_bucket():
+def test_contradiction_candidates_only_flags_single_valued_categories():
+    # A candidate can legitimately own several projects — differing values there
+    # are NOT a contradiction. Only single-fact categories (team_size/tenure) count.
     claims = [
         {"category": "other", "statement": "two startups", "value": "2 startups", "interview_id": 1},
         {"category": "other", "statement": "two juniors", "value": "2 juniors", "interview_id": 2},
+        {"category": "project_ownership", "statement": "led rollback", "value": "rollback", "interview_id": 1},
+        {"category": "project_ownership", "statement": "wrote postmortem", "value": "postmortem", "interview_id": 2},
     ]
     assert contradiction_candidates(claims) == []
 

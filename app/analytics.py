@@ -53,12 +53,15 @@ def recommendation(comp: float | None, n_assessed: int, blockers: list[str]) -> 
     return {"label": label, "tone": tone,
             "reason": f"Composite {comp}/4 across {n_assessed} assessed {unit}; no blocking concerns."}
 
+# Only categories that describe a single fact about the candidate can contradict:
+# a person has one team size / tenure, but can legitimately own many projects or
+# cite many metrics — so those are never treated as conflicts.
+SINGLE_VALUED_CATS = {"team_size", "tenure"}
+
 def contradiction_candidates(claims: list[dict]) -> list[tuple[dict, dict]]:
     by_cat: dict[str, list] = defaultdict(list)
     for c in claims:
-        # "other" is a catch-all bucket — different miscellaneous facts are not
-        # contradictions, so never pair them.
-        if c.get("value") and c.get("category") != "other":
+        if c.get("value") and c.get("category") in SINGLE_VALUED_CATS:
             by_cat[c["category"]].append(c)
     pairs = []
     for cat, items in by_cat.items():
