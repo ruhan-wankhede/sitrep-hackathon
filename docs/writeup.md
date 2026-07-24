@@ -1,6 +1,6 @@
 # Interview Scorecard
 
-**Track:** Code · **Agent:** _<Sitrep Marketplace URL — add after publishing>_ · **Repo:** https://github.com/ruhan-wankhede/sitrep-hackathon · **Demo video:** _<add link>_
+**Track:** Code · **Agent:** https://app.joinsitrep.com/dashboard/marketplace/interview-scorecard--40296c27-e2da-47d2-a836-3f9ab8b86f12 · **Repo:** https://github.com/ruhan-wankhede/sitrep-hackathon · **Demo video:** _<add link>_
 
 ## Inspiration
 
@@ -18,11 +18,15 @@ Interview Scorecard runs after each interview and scores the candidate against a
 - **Candidate feedback draft** — a warm, evidence-cited note the recruiter can adapt to send the candidate, delivered straight back into SitRep as a post-meeting artifact.
 - **Compliance flags** — surfaces non-job-related questions (family plans, age) as a consistency-and-risk signal.
 
+![The candidate view: evidence-linked scores, a claim ledger catching an 8-vs-3 team-size contradiction, an auto-generated next-interviewer brief, and a hire recommendation held at "Needs follow-up".](screenshot-candidate.png)
+
 ## How we built it
 
 It is a SitRep remote (code-track) agent: a FastAPI service that SitRep POSTs each meeting to, returning a markdown scorecard plus a link to the live dashboard. The design principle is one line: **LLMs only extract and judge evidence; code does all the math and memory.** Each interview flows through three small, schema-validated LLM calls — extract Q&A and claims, score against the rubric, flag quality issues — and then every cross-interview computation (coverage, disagreement, contradictions, ranking, recommendations) is deterministic Python over Postgres. That split is what makes it trustworthy: the parts that must be consistent never touch a model.
 
 The stack runs entirely on free tiers: Google Gemini Flash as the primary model with a Groq Llama fallback behind a single `complete_json()` interface; Neon Postgres for cross-meeting memory; and a Jinja2 + Tailwind + Alpine dashboard (with a light/dark theme) hosted on Render and kept warm by an uptime pinger.
+
+![The comparison matrix ranks candidates with a per-candidate verdict; every score is one click from its per-interviewer evidence.](screenshot-matrix.png)
 
 ## Challenges we ran into
 
